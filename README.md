@@ -105,9 +105,16 @@ Estimate and budget created **before** provisioning (screenshots below).
  
 ### Cleanup
  
-Resources kept for Phase 5: **[fill in]**
-Deleted: **[fill in]**
-Billing dashboard checked on: **[date]**, unexpected charges: **[none / describe]**
+Resources kept for Phase 5: 
+<img width="1568" height="687" alt="image" src="https://github.com/user-attachments/assets/389b3e0f-2d08-4937-a21a-5a460ef609e8" />
+<img width="1568" height="715" alt="image" src="https://github.com/user-attachments/assets/f0504322-0d36-4381-b53c-2a0842cdf2cc" />
+<img width="1568" height="717" alt="image" src="https://github.com/user-attachments/assets/f11f8cbf-c561-4ea1-9aa9-a406e9cc8c10" />
+<img width="1568" height="653" alt="image" src="https://github.com/user-attachments/assets/db5180f3-bb29-4185-b763-454265d5363d" />
+<img width="1568" height="715" alt="image" src="https://github.com/user-attachments/assets/664cb299-4bf7-4ef2-95ee-892964a631e7" />
+
+
+Billing dashboard checked on: **26/10/2027**
+Unexpected charges: **None**
 
 
 =================================================================
