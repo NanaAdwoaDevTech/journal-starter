@@ -33,6 +33,84 @@ This is additional reference material for the capstone in case you want to explo
 > **Learning environment only:** This application has no authentication or
 > per-user data isolation. Do not expose it publicly or store personal or
 > sensitive journal content in it.
+ 
+=================================================================
+
+## My Section
+
+**Deployment (Phase 4)**
+
+Public base URL: https://nana-journal.duckdns.org 
+Verifier result: passed Oct 26, 2026 (entry creation and live AI analysis). Test data only. The API has no user authentication or data isolation.
+
+- **Public path:** internet -> Elastic IP -> Caddy (TLS) -> API container on `127.0.0.1:8000`.
+- **Private path:** API -> PostgreSQL over the VPC. The database has no public address.
+- **Administrative path:** IAM login -> Session Manager -> EC2. No SSH port and no key pair.
+### Services selected
+ 
+| Layer | Service | Why |
+|---|---|---|
+| Network | VPC, 2 public + 2 private subnets, internet gateway, **no NAT gateway** | Private tier for the database without the NAT hourly cost |
+| App tier | EC2 `t3.micro`, Docker, Caddy, Elastic IP | Cheapest setup that gives public HTTPS and a stable address |
+| HTTPS | Caddy + Let's Encrypt, DuckDNS hostname | Free, trusted, auto-renewing certificate |
+| Database | RDS PostgreSQL (`db.t4g.micro`, single-AZ, 20 GiB gp3) | Managed, persistent, private |
+| Admin access | AWS Systems Manager Session Manager | Authenticated access with no open management port |
+| Secrets | SSM Parameter Store (SecureString) | Keeps credentials out of git, images, and logs |
+| Cost control | AWS Budgets (`journal-api-deploy`, $40/month) | Alerts configured before provisioning |
+ 
+### Expected cost
+ 
+| Item | Estimate / month |
+|---|---|
+| EC2 `t3.micro` + 20 GiB gp3 | about $8 to $10 |
+| RDS `db.t4g.micro` + 20 GiB gp3 | about $13 to $16 |
+| Public IPv4 (Elastic IP) | about $3.60 |
+| Session Manager, Parameter Store (standard) | $0 |
+| Data transfer + OpenAI testing | under $2 |
+| **Total** | **about $25 to $30 (about $1/day)** |
+ 
+Estimates are approximate. Actual spend after deployment: **[fill in from Billing]**.
+Estimate and budget created **before** provisioning (screenshots below).
+ 
+### Access controls
+ 
+- `journal-app-sg`: inbound **80 and 443 only**. No port 22.
+- `journal-db-sg`: inbound **5432 only, from `journal-app-sg`** (not an IP range).
+- RDS: **Publicly accessible = No**, DB subnet group contains only private subnets.
+- EC2 role `journal-ec2-role`: Session Manager plus an inline policy that reads **only** `/journal/*` parameters.
+- Secrets live in Parameter Store. They are loaded into environment variables at container start. They are not in the repo (`.env` is git-ignored and in `.dockerignore`), not in the image, and not in logs.
+### AI model and safety controls
+ 
+- **Model:** `gpt-6-luna` via the OpenAI Responses API. **[confirm model name]**
+- Structured output with a strict JSON schema (sentiment, summary, topics only).
+- Prompt tells the model to treat journal text as data, not instructions (prompt-injection defence).
+- Server rejects unfinished, refused, blank, or non-object responses, then validates with Pydantic. The AI cannot set the entry ID or timestamp.
+- 60-second timeout and one retry. Errors return generic messages with no journal text.
+- Logs never contain journal text, provider responses, or credentials.
+- Provider spending limit: **[fill in if configured]**
+### Evidence that each constraint passed
+ 
+| # | Constraint | How it is met | Evidence |
+|---|---|---|---|
+| 1 | Public HTTPS, trusted certificate | Caddy + Let's Encrypt on `nana-journal.duckdns.org` | `docs/img/padlock.png`, `docs/img/certificate.png` (issuer Let's Encrypt) |
+| 2 | Private database | Private subnets, not public, SG allows only the app SG | `docs/img/rds-connectivity.png`, `docs/img/sg-inbound.png`, `docs/img/db-blocked-from-internet.png` (`BLOCKED`, resolves to `10.0.x.x`) |
+| 3 | Private management, authenticated, no leaked credentials | Session Manager, no port 22, Parameter Store | `docs/img/session-manager.png`, `docs/img/app-sg.png`, `docs/img/parameter-store.png` |
+| 4 | Survives logout and restart, data persists | Docker `--restart unless-stopped`, data in RDS | `docs/img/restart-test.png` (entry present after `docker restart`) |
+| 5 | CRUD and live AI analysis | Same API code; secrets injected at runtime | `docs/img/db-tables.png`, `docs/img/verifier-passed.png` |
+| 6 | Cost estimate and budget alerts before provisioning | Pricing Calculator estimate, AWS Budget | `docs/img/estimate.png`, `docs/img/budget.png` |
+ 
+### Limitation to fix before production
+ 
+**The public API has no authentication or rate limiting.** Anyone with the URL can create, read, and delete entries, and every `/analyze` call triggers a paid request to the AI provider. A bot could fill the database or run up the AI bill. Before real use I would add authentication, per-client rate limits, a provider spending cap with alerts, per-user data isolation, and disable the public `/docs` page.
+ 
+### Cleanup
+ 
+Resources kept for Phase 5: **[fill in]**
+Deleted: **[fill in]**
+Billing dashboard checked on: **[date]**, unexpected charges: **[none / describe]**
+
+
+=================================================================
 
 ## License
 
