@@ -111,11 +111,17 @@ Resources kept for Phase 5:
 <img width="1568" height="717" alt="image" src="https://github.com/user-attachments/assets/f11f8cbf-c561-4ea1-9aa9-a406e9cc8c10" />
 <img width="1568" height="653" alt="image" src="https://github.com/user-attachments/assets/db5180f3-bb29-4185-b763-454265d5363d" />
 <img width="1568" height="715" alt="image" src="https://github.com/user-attachments/assets/664cb299-4bf7-4ef2-95ee-892964a631e7" />
-
+<img width="1568" height="706" alt="image" src="https://github.com/user-attachments/assets/6337f565-05d5-414b-aaac-849285e18abd" />
+<img width="1568" height="718" alt="image" src="https://github.com/user-attachments/assets/3ab6e3ae-6774-4cf1-83d6-4d879f60ce9c" />
+<img width="1568" height="672" alt="image" src="https://github.com/user-attachments/assets/843749dd-7a0a-4802-9d2d-7b44c225fa6e" />
+<img width="1568" height="664" alt="image" src="https://github.com/user-attachments/assets/4f2b60d6-98de-4ece-8ee7-a1a713420ea9" />
+<img width="1568" height="663" alt="image" src="https://github.com/user-attachments/assets/285037f9-fba4-4066-96a1-1b6f9fa27fcb" />
+<img width="1568" height="714" alt="image" src="https://github.com/user-attachments/assets/1e1f8ea6-1ebd-45e3-b9ef-ac2bfd65a34b" />
+<img width="1568" height="720" alt="image" src="https://github.com/user-attachments/assets/febf2420-c620-4426-bb79-9ed27264234b" />
+<img width="1568" height="686" alt="image" src="https://github.com/user-attachments/assets/9b81cd21-3499-4ede-ad71-1c0674c34681" />
 
 Billing dashboard checked on: **26/10/2027**
 Unexpected charges: **None**
-
 
 =================================================================
 
