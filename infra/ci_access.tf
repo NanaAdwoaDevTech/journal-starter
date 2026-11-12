@@ -13,8 +13,8 @@ resource "aws_iam_role_policy" "ci_deploy" {
         Resource = aws_eks_cluster.main.arn
       },
       {
-        Effect   = "Allow"
-        Action   = ["secretsmanager:GetSecretValue"]
+        Effect = "Allow"
+        Action = ["secretsmanager:GetSecretValue"]
         Resource = [
           aws_secretsmanager_secret.database_url.arn,
           aws_secretsmanager_secret.openai.arn,

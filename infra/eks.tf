@@ -83,7 +83,11 @@ resource "aws_eks_node_group" "main" {
     max_size     = 2
   }
 
-  depends_on = [aws_iam_role_policy_attachment.node]
+  depends_on = [
+    aws_iam_role_policy_attachment.node,
+    aws_nat_gateway.main,
+    aws_route_table_association.private,
+  ]
 }
 
 # Who may administer the cluster: you, and the CI role that deploys
