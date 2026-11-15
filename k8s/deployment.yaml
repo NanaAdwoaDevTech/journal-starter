@@ -35,6 +35,9 @@ spec:
           envFrom:
             - secretRef:
                 name: journal-secrets
+          env:
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-collector.observability.svc.cluster.local:4318
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:

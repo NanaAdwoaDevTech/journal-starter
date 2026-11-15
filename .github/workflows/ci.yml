@@ -243,7 +243,7 @@ jobs:
       - name: Deploy application and wait for rollout
         run: |
           sed -i "s|IMAGE_PLACEHOLDER|${IMAGE}|" k8s/deployment.yaml
-          kubectl apply -f k8s/deployment.yaml -f k8s/service.yaml -f k8s/ingress.yaml
+          kubectl apply -f k8s/otel-collector.yaml -f k8s/deployment.yaml -f k8s/service.yaml -f k8s/ingress.yaml
           kubectl -n "$NAMESPACE" rollout status deployment/journal-api --timeout=300s
 
       - name: Verify the live version over HTTPS

@@ -16,6 +16,7 @@ from openai import AsyncOpenAI
 
 from api.config import get_settings
 from api.models.entry import AnalysisResponse
+from api.telemetry import traced
 
 
 class InvalidAnalysisResponseError(ValueError):
@@ -37,6 +38,7 @@ def _default_client() -> AsyncOpenAI:
     )
 
 
+@traced("llm.analyze_journal_entry")
 async def analyze_journal_entry(
     entry_id: str,
     entry_text: str,
