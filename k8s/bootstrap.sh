@@ -21,7 +21,6 @@ helm upgrade --install cert-manager jetstack/cert-manager \
 
 cat > /tmp/traefik-values.yaml <<EOF
 service:
-  type: LoadBalancer
   annotations:
     service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
     service.beta.kubernetes.io/aws-load-balancer-subnets: "${SUBNET_ID}"

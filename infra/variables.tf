@@ -21,3 +21,14 @@ variable "ci_role_name" {
   description = "Existing IAM role assumed by GitHub Actions"
   default     = "github-actions-journal"
 }
+variable "node_instance_type" {
+  type        = string
+  description = "EC2 instance type for EKS worker nodes (must be Free Plan eligible)"
+  default     = "c7i-flex.large"
+}
+
+variable "node_count" {
+  type        = number
+  description = "Number of EKS worker nodes"
+  default     = 2
+}
