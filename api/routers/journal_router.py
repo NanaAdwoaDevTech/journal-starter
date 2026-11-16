@@ -19,6 +19,7 @@ from api.models.entry import (
 from api.repositories.interface_repository import DatabaseInterface
 from api.services.entry_service import EntryService
 from api.services.llm_service import InvalidAnalysisResponseError, analyze_journal_entry
+from api.telemetry import ENTRIES_CREATED
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -59,6 +60,7 @@ async def create_entry(
 ) -> EntryCreatedResponse:
     """Create a new journal entry."""
     created_entry = await entry_service.create_entry(entry_data)
+    ENTRIES_CREATED.add(1)
     return EntryCreatedResponse(detail="Entry created successfully", entry=created_entry)
 
 
