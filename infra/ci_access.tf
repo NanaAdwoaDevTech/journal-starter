@@ -1,5 +1,4 @@
-# Extra permissions for the existing CI role, so the deploy job can reach the
-# cluster and read the secrets. Removed again on destroy.
+# Lets the CI role describe the cluster so the deploy job can connect. Removed on destroy.
 resource "aws_iam_role_policy" "ci_deploy" {
   name = "journal-ci-deploy"
   role = var.ci_role_name
@@ -11,14 +10,6 @@ resource "aws_iam_role_policy" "ci_deploy" {
         Effect   = "Allow"
         Action   = ["eks:DescribeCluster"]
         Resource = aws_eks_cluster.main.arn
-      },
-      {
-        Effect = "Allow"
-        Action = ["secretsmanager:GetSecretValue"]
-        Resource = [
-          aws_secretsmanager_secret.database_url.arn,
-          aws_secretsmanager_secret.openai.arn,
-        ]
       },
     ]
   })
