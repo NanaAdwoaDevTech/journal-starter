@@ -212,36 +212,9 @@ jobs:
       - name: Connect to the cluster
         run: aws eks update-kubeconfig --name "$CLUSTER_NAME" --region "$AWS_REGION"
 
-      - name: Create application secret from Secrets Manager
-        run: |
-          kubectl apply -f k8s/namespace.yaml
-          DATABASE_URL="$(aws secretsmanager get-secret-value \
-            --secret-id journal/database-url --query SecretString --output text)"
-          echo "::add-mask::$DATABASE_URL"
-          OPENAI_JSON="$(aws secretsmanager get-secret-value \
-            --secret-id journal/openai --query SecretString --output text)"
-          OPENAI_API_KEY="$(jq -r .api_key <<<"$OPENAI_JSON")"
-          echo "::add-mask::$OPENAI_API_KEY"
-          kubectl -n "$NAMESPACE" create secret generic journal-secrets \
-            --from-literal=DATABASE_URL="$DATABASE_URL" \
-            --from-literal=OPENAI_API_KEY="$OPENAI_API_KEY" \
-            --from-literal=OPENAI_BASE_URL="$(jq -r .base_url <<<"$OPENAI_JSON")" \
-            --from-literal=OPENAI_MODEL="$(jq -r .model <<<"$OPENAI_JSON")" \
-            --dry-run=client -o yaml | kubectl apply -f -
-
-      - name: Initialise database schema
-        run: |
-          kubectl -n "$NAMESPACE" create configmap db-schema \
-            --from-file=database_setup.sql --dry-run=client -o yaml | kubectl apply -f -
-          kubectl -n "$NAMESPACE" delete job db-schema --ignore-not-found --wait=true
-          kubectl apply -f k8s/schema-job.yaml
-          if ! kubectl -n "$NAMESPACE" wait --for=condition=complete job/db-schema --timeout=180s; then
-            kubectl -n "$NAMESPACE" logs job/db-schema --tail=50 || true
-            exit 1
-          fi
-
       - name: Deploy application and wait for rollout
         run: |
+          kubectl apply -f k8s/namespace.yaml -f k8s/serviceaccount.yaml
           sed -i "s|IMAGE_PLACEHOLDER|${IMAGE}|" k8s/deployment.yaml
           kubectl apply -f k8s/otel-collector.yaml -f k8s/deployment.yaml -f k8s/service.yaml -f k8s/ingress.yaml
           kubectl -n "$NAMESPACE" rollout status deployment/journal-api --timeout=300s
