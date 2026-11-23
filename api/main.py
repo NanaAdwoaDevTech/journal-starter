@@ -9,6 +9,7 @@ from api.config import get_settings
 from api.logging_config import configure_logging
 from api.repositories.postgres_repository import PostgresDB
 from api.routers.journal_router import router as journal_router
+from api.security_headers import add_security_headers
 from api.telemetry import setup_telemetry
 
 logger = logging.getLogger(__name__)
@@ -34,6 +35,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 setup_telemetry(app)
+add_security_headers(app)
 app.include_router(journal_router)
 
 
