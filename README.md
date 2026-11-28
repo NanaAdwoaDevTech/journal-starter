@@ -123,6 +123,62 @@ Resources kept for Phase 5:
 Billing dashboard checked on: **26/10/2027**
 Unexpected charges: **None**
 
+## Phase 5 and 6: Kubernetes deployment and security hardening
+
+The Phase 4 stack above (EC2 and Caddy) was replaced by EKS, Terraform and a CI/CD pipeline, then hardened in Phase 6. Live URL: https://nana-journal.duckdns.org (verified on **[date]** for commit **[sha]**). The architecture diagram and the deploy guide are in [docs/deployment.md](docs/deployment.md). The stack was torn down after verification. Test data only.
+
+### Security controls implemented, and why
+
+| # | Control | What I did | Why |
+|---|---|---|---|
+| 1 | Service identity | The API runs as the `journal-api` Kubernetes service account. EKS Pod Identity gives it the `journal-api` IAM role, which can only read two secrets. | The app needs no stored keys and cannot do anything else in the account. |
+| 2 | Secrets in a vault | `journal/database-url` and `journal/openai` live in Secrets Manager. The app loads them at startup (`SECRETS_SOURCE=aws`). The CI role lost its secrets permission. | No plaintext secrets on disk, in git, in the image or in Kubernetes. |
+| 3 | Private database | RDS sits in private subnets and accepts port 5432 only from the cluster security group. | The database cannot be reached from the internet. |
+| 4 | HTTPS everywhere | cert-manager issues a Let's Encrypt certificate. Traefik redirects HTTP to HTTPS. The API sends `Strict-Transport-Security` (unit-tested). | No plaintext traffic, and browsers are told to stay on HTTPS. |
+| 5 | Audit logging | A multi-region CloudTrail trail with log file validation delivers to S3 with a 100-day lifecycle rule (`infra-audit/`). | A record of every action on the account. |
+| 6 | Security alert | An EventBridge rule emails me through SNS when a security group is created, changed or deleted. Tested with a harmless group. | Risky network changes are noticed quickly. |
+| 7 | Code scanning | CodeQL (advanced setup, Python) runs on push, pull request and weekly. Dependabot checks four ecosystems weekly. | Vulnerabilities and outdated dependencies are caught early. |
+| 8 | Incident response | [docs/runbooks/credential-leak.md](docs/runbooks/credential-leak.md) covers rotation, checking for unauthorized access and notification. | A written plan before it is needed. |
+
+**GuardDuty:** I tried to enable it, and AWS returned `SubscriptionRequiredException` on my Free Plan. I did not upgrade the account for it, so threat detection is not enabled. CloudTrail plus the alert above is detection of changes I defined, not managed threat detection.
+
+### Evidence that each constraint passed
+
+Evidence is captured as text (command output) in [docs/evidence/phase6.md](docs/evidence/phase6.md).
+
+| # | Constraint | Evidence | Status |
+|---|---|---|---|
+| 1 | API runs under its own identity, no personal credentials | Pod Identity association, the role's policy, pod environment with no keys | **[pending live run]** |
+| 2 | Secrets loaded from the vault at startup | App log line and pod environment showing no secret values | **[pending live run]** |
+| 3 | Database private | `PubliclyAccessible` false, connection from my machine fails, connection from the cluster succeeds | **[pending live run]** |
+| 4 | HTTPS only | `curl -v` certificate, HTTP does not return 200, HSTS header on `/version` | **[pending live run]** |
+| 5 | Audit logging | Trail status, a test action found in the S3 log files, 100-day retention | Done (security group test, Nov 22) |
+| 6 | Alert received | Three alert emails received for a test security group | Done (Nov 22) |
+| 7 | Security scanning | CodeQL green on `main`, zero open alerts, Dependabot enabled | Done, **[re-check on the final commit]** |
+
+### Cost
+
+Estimate for the EKS stack: about **$0.38 per hour**, so roughly **$1.50 to $2.30** for a 4 to 6 hour window. The audit stack costs about $0. Actual spend after the run: **[fill in from Cost Explorer]**. Provider spending limit: **[fill in if configured]**.
+
+### What I would do differently, and limitations
+
+- The API still has no authentication, rate limiting or per-user isolation. Test data only.
+- The app connects to the database as its master user so it can create its own tables. A separate least-privilege database user would be better.
+- One NAT gateway and a single-AZ database, so no high availability.
+- The collector image uses the `latest` tag, and the Dockerfile pulls `uv:latest`. Both should be pinned.
+- The dashboard widget "Requests per 5 minutes" sums cumulative series and shows nonsense. It needs fixing or removing.
+- GuardDuty is not enabled (see above).
+
+### Cleanup record
+
+| Resource | Removed | Checked |
+|---|---|---|
+| EKS cluster, nodes, RDS, NAT gateway, load balancer, Elastic IP | **[date]** | **[command and result]** |
+| Both Terraform states, ECR repository, secrets, CloudTrail bucket | **[date]** | **[command and result]** |
+| OpenAI key rotated, DuckDNS token regenerated | **[date]** | n/a |
+
+Cost Explorer checked on **[date]**. Unexpected charges: **[none / describe]**.
+
 =================================================================
 
 ## License

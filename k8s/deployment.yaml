@@ -21,6 +21,7 @@ spec:
       labels:
         app: journal-api
     spec:
+      serviceAccountName: journal-api
       securityContext:
         runAsNonRoot: true
         runAsUser: 10001
@@ -32,10 +33,11 @@ spec:
           ports:
             - name: http
               containerPort: 8000
-          envFrom:
-            - secretRef:
-                name: journal-secrets
           env:
+            - name: SECRETS_SOURCE
+              value: aws
+            - name: AWS_REGION
+              value: us-east-1
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: http://otel-collector.observability.svc.cluster.local:4318
           securityContext:

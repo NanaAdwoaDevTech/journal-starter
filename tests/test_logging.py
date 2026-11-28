@@ -264,7 +264,7 @@ assert not records
 @pytest.fixture
 def fake_database(monkeypatch):
     events = []
-    database = object()
+    database = type("FakeDatabase", (), {"pool": None})()
 
     @asynccontextmanager
     async def open_database(_url):
@@ -274,6 +274,10 @@ def fake_database(monkeypatch):
         finally:
             events.append("closed")
 
+    async def skip_schema(_pool):
+        return None
+
+    monkeypatch.setattr(main, "apply_schema", skip_schema)
     monkeypatch.setattr(main, "PostgresDB", open_database)
     return database, events
 

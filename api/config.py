@@ -3,6 +3,8 @@ from functools import lru_cache
 from pydantic import Field, HttpUrl, PostgresDsn, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from api.secrets import load_secrets_from_aws
+
 
 class Settings(BaseSettings):
     """Typed application settings.
@@ -79,4 +81,5 @@ def get_settings() -> Settings:
     instead; overriding this function as a FastAPI dependency does not change
     startup settings. Restart the API after editing configuration.
     """
+    load_secrets_from_aws()
     return Settings()  # type: ignore[call-arg]

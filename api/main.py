@@ -9,6 +9,8 @@ from api.config import get_settings
 from api.logging_config import configure_logging
 from api.repositories.postgres_repository import PostgresDB
 from api.routers.journal_router import router as journal_router
+from api.schema import apply_schema
+from api.security_headers import add_security_headers
 from api.telemetry import setup_telemetry
 
 logger = logging.getLogger(__name__)
@@ -19,6 +21,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     configure_logging()
     settings = get_settings()
     async with PostgresDB(settings.database_url) as database:
+        await apply_schema(database.pool)
         app.state.database = database
         try:
             logger.info("Journal API ready")
@@ -34,6 +37,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 setup_telemetry(app)
+add_security_headers(app)
 app.include_router(journal_router)
 
 

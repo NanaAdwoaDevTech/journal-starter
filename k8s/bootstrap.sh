@@ -5,6 +5,8 @@ set -euo pipefail
 
 CLUSTER="${CLUSTER:-journal-cluster}"
 REGION="${AWS_REGION:-us-east-1}"
+# HTTP to HTTPS redirect on Traefik. Set REDIRECT_VALUES="" to turn it off.
+REDIRECT_VALUES="${REDIRECT_VALUES-k8s/traefik-redirect.yaml}"
 
 EIP_ALLOC="$(terraform -chdir=infra output -raw ingress_eip_allocation_id)"
 SUBNET_ID="$(terraform -chdir=infra output -raw ingress_subnet_id)"
@@ -30,7 +32,7 @@ EOF
 
 helm upgrade --install traefik traefik/traefik \
   --namespace traefik --create-namespace \
-  -f /tmp/traefik-values.yaml --wait
+  -f /tmp/traefik-values.yaml ${REDIRECT_VALUES:+-f "$REDIRECT_VALUES"} --wait
 
 kubectl apply -f k8s/namespace.yaml
 
